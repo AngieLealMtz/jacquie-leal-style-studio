@@ -5,6 +5,8 @@ const required = [
   '<!doctype html>',
   '<html lang="en">',
   'id="photoInput"',
+  'id="shapePicker"',
+  'name="bodyShape"',
   'id="occasion"',
   'id="season"',
   'id="generateButton"',
@@ -23,6 +25,12 @@ const uniqueTikTokLinks = new Set(tiktokLinks);
 const embeddedTikToks = html.match(/data-video-id="\d+"/g) || [];
 if (uniqueTikTokLinks.size !== 4 || embeddedTikToks.length !== 4) {
   console.error(`Expected 4 unique TikTok links and 4 embedded videos; found ${uniqueTikTokLinks.size} links and ${embeddedTikToks.length} embeds.`);
+  process.exit(1);
+}
+
+const bodyShapes = html.match(/<input type="radio" name="bodyShape"/g) || [];
+if (bodyShapes.length !== 5) {
+  console.error(`Expected 5 body shape options, found ${bodyShapes.length}.`);
   process.exit(1);
 }
 
