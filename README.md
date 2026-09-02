@@ -1,4 +1,4 @@
-# Guardarropa — Jaquie Leal
+# Jaquie Leal Style Studio
 
 MVP web móvil para una asesoría personalizada de estilo e imagen.
 
