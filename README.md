@@ -1,4 +1,4 @@
-# Jaquie Leal Style Studio
+# Jacquie Leal Style Studio
 
 MVP web móvil para una asesoría personalizada de estilo e imagen.
 
@@ -38,7 +38,7 @@ vercel --prod
 
 ## Ruta de evolución
 
-1. Autenticación para Jaquie y sus clientas.
+1. Autenticación para Jacquie y sus clientas.
 2. Base de datos y almacenamiento privado de fotografías.
 3. Panel de curaduría protegido.
 4. Generación de imágenes de outfits mediante una API de IA desde funciones de servidor.

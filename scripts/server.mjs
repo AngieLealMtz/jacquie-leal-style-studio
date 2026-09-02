@@ -20,5 +20,5 @@ createServer(async (request, response) => {
     response.end('No encontrado');
   }
 }).listen(port, '127.0.0.1', () => {
-  console.log(`Guardarropa disponible en http://127.0.0.1:${port}`);
+  console.log(`Jacquie Leal Style Studio disponible en http://127.0.0.1:${port}`);
 });

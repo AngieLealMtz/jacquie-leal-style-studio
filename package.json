@@ -1,8 +1,8 @@
 {
-  "name": "jaquie-leal-style-studio",
+  "name": "jacquie-leal-style-studio",
   "version": "1.0.0",
   "private": true,
-  "description": "Asesoría digital de estilo e imagen de Jaquie Leal",
+  "description": "Asesoría digital de estilo e imagen de Jacquie Leal",
   "scripts": {
     "dev": "node scripts/server.mjs",
     "check": "node scripts/check.mjs"
