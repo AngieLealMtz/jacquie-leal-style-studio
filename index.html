@@ -69,10 +69,10 @@
       display:grid;
       grid-template-columns:minmax(0, .9fr) minmax(430px, 1.1fr);
       gap:64px;
-      align-items:center;
+      align-items:start;
       padding:82px 0 90px;
     }
-    .hero-copy { max-width:520px; }
+    .hero-copy { max-width:520px; position:sticky; top:32px; padding-top:34px; }
     .hero h1 {
       margin:18px 0 24px;
       font-family:var(--serif);
@@ -86,6 +86,17 @@
     .hero-points { display:flex; gap:24px; margin:34px 0 0; padding:0; list-style:none; }
     .hero-points li { display:flex; align-items:center; gap:8px; font-size:9px; letter-spacing:.12em; text-transform:uppercase; }
     .hero-points span { width:6px; height:6px; border-radius:50%; background:var(--warm-taupe); }
+    .editorial-carousel { margin-top:38px; }
+    .editorial-window { position:relative; aspect-ratio:1.22 / 1; overflow:hidden; border:1px solid var(--line); background:var(--misty-greige); }
+    .editorial-image { position:absolute; inset:0; background-image:url("assets/editorial-hero.jpg"); background-repeat:no-repeat; background-size:300% 100%; background-position:0 50%; transition:background-position .8s cubic-bezier(.22,.61,.36,1); }
+    .editorial-window::after { content:""; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 0 10px rgba(247,243,236,.12); }
+    .editorial-folio { position:absolute; top:14px; right:14px; z-index:2; min-width:46px; padding:7px 9px; color:var(--paper); background:rgba(36,33,30,.62); font-family:var(--serif); font-size:16px; font-style:italic; text-align:center; }
+    .editorial-caption { position:absolute; left:14px; bottom:14px; z-index:2; max-width:78%; padding:10px 12px; color:var(--ink); background:rgba(247,243,236,.9); font-family:var(--serif); font-size:18px; font-style:italic; }
+    .editorial-controls { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-top:12px; }
+    .editorial-label { color:#75695e; font-size:8px; letter-spacing:.15em; text-transform:uppercase; }
+    .editorial-dots { display:flex; gap:7px; }
+    .editorial-dot { width:26px; height:3px; padding:0; border:0; background:var(--misty-greige); transition:background .2s ease; }
+    .editorial-dot.active { background:var(--espresso); }
 
     .studio {
       position:relative;
@@ -302,7 +313,8 @@
     @media (max-width:880px) {
       .nav-links a:not(.nav-cta) { display:none; }
       .hero { grid-template-columns:1fr; gap:56px; padding-top:58px; }
-      .hero-copy { max-width:650px; }
+      .hero-copy { max-width:650px; position:static; padding-top:0; }
+      .editorial-window { aspect-ratio:1.5 / 1; }
       .studio { max-width:650px; box-shadow:16px 18px 0 rgba(194,177,161,.24); }
       .formula-grid { grid-template-columns:1fr; }
       .about-grid { grid-template-columns:1fr; gap:58px; }
@@ -375,6 +387,21 @@
           <li><span></span>Your palette</li>
           <li><span></span>Your lifestyle</li>
         </ul>
+        <div class="editorial-carousel" aria-label="Jacquie Leal styling inspiration">
+          <div class="editorial-window">
+            <div class="editorial-image" id="editorialImage" role="img" aria-label="A refined neutral capsule wardrobe"></div>
+            <span class="editorial-folio" id="editorialFolio">01 / 03</span>
+            <span class="editorial-caption" id="editorialCaption">A wardrobe built with intention.</span>
+          </div>
+          <div class="editorial-controls">
+            <span class="editorial-label">The Jacquie Leal edit</span>
+            <div class="editorial-dots" aria-label="Choose an inspiration image">
+              <button class="editorial-dot active" type="button" data-slide="0" aria-label="Show capsule wardrobe"></button>
+              <button class="editorial-dot" type="button" data-slide="1" aria-label="Show tailored outfit details"></button>
+              <button class="editorial-dot" type="button" data-slide="2" aria-label="Show neutral styled look"></button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <section class="studio" id="studio" aria-labelledby="studio-title">
@@ -804,6 +831,35 @@
       result.classList.add('show');
       result.scrollIntoView({ behavior:'smooth', block:'center' });
     });
+
+    const editorialImage = document.getElementById('editorialImage');
+    const editorialFolio = document.getElementById('editorialFolio');
+    const editorialCaption = document.getElementById('editorialCaption');
+    const editorialDots = [...document.querySelectorAll('.editorial-dot')];
+    const editorialSlides = [
+      { position:'0% 50%', caption:'A wardrobe built with intention.', label:'A refined neutral capsule wardrobe' },
+      { position:'50% 50%', caption:'Timeless pieces. Personal combinations.', label:'Tailored neutral pieces and accessories' },
+      { position:'100% 50%', caption:'Quiet confidence, styled for real life.', label:'An elegant neutral outfit styled for real life' }
+    ];
+    let editorialSlide = 0;
+
+    function showEditorialSlide(index) {
+      editorialSlide = index;
+      const slide = editorialSlides[index];
+      editorialImage.style.backgroundPosition = slide.position;
+      editorialImage.setAttribute('aria-label', slide.label);
+      editorialCaption.textContent = slide.caption;
+      editorialFolio.textContent = `0${index + 1} / 03`;
+      editorialDots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === index));
+    }
+
+    editorialDots.forEach(dot => dot.addEventListener('click', () => {
+      showEditorialSlide(Number(dot.dataset.slide));
+    }));
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setInterval(() => showEditorialSlide((editorialSlide + 1) % editorialSlides.length), 5200);
+    }
 
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>

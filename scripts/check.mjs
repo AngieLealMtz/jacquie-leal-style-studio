@@ -7,6 +7,7 @@ const required = [
   'id="photoInput"',
   'id="photoCanvas"',
   'id="analysisStatus"',
+  'id="editorialImage"',
   'id="shapePicker"',
   'name="bodyShape"',
   'id="palettePicker"',
@@ -45,5 +46,6 @@ if (colorPalettes.length !== 12) {
 }
 
 await access(new URL('../assets/jacquie-leal.jpg', import.meta.url));
+await access(new URL('../assets/editorial-hero.jpg', import.meta.url));
 
 console.log('Validation complete: the English AI outfit preview is ready to deploy.');
