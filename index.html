@@ -148,9 +148,18 @@
       text-transform:uppercase;
     }
     #photoInput { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
-    #photoPreview { position:absolute; inset:0; width:100%; height:100%; display:none; object-fit:cover; }
+    #photoCanvas { width:100%; height:auto; display:none; cursor:crosshair; touch-action:manipulation; }
+    .upload.has-image { min-height:0; display:block; }
     .photo-actions { position:absolute; right:12px; bottom:12px; display:none; gap:8px; }
     .photo-actions label, .photo-actions button { padding:9px 12px; border:0; color:var(--paper); background:rgba(36,33,30,.82); font-size:8px; letter-spacing:.12em; text-transform:uppercase; }
+    .analysis-panel { display:none; margin-top:10px; padding:13px 15px; border:1px solid var(--line); background:var(--soft-cream); }
+    .analysis-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    #analysisStatus { margin:0; color:#685d54; font-family:var(--serif); font-size:16px; line-height:1.35; }
+    #analysisStatus.detected { color:var(--espresso); font-weight:600; }
+    .reset-analysis { display:none; flex-shrink:0; padding:8px 10px; border:1px solid var(--espresso); color:var(--espresso); background:transparent; font-size:7px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
+    .analysis-key { display:flex; gap:13px; margin-top:9px; color:#7e7167; font-size:7px; letter-spacing:.1em; text-transform:uppercase; }
+    .analysis-key span { display:flex; align-items:center; gap:5px; }
+    .analysis-key i { width:7px; height:7px; display:inline-block; border-radius:50%; }
 
     .shape-picker { margin:20px 0 0; padding:0; border:0; }
     .shape-picker legend { width:100%; padding:0; }
@@ -170,6 +179,19 @@
     .shape-mark.hourglass { clip-path:polygon(9% 0,91% 0,64% 48%,91% 100%,9% 100%,36% 48%); }
     .shape-mark.oval { border-radius:48%; clip-path:none; }
     .shape-name { font-family:var(--serif); font-size:13px; line-height:1.05; }
+
+    .palette-picker { margin:20px 0 0; padding:0; border:0; }
+    .palette-picker legend { width:100%; padding:0; }
+    .palette-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:7px; }
+    .palette-option { position:relative; }
+    .palette-option input { position:absolute; width:1px; height:1px; opacity:0; }
+    .palette-option label { min-height:77px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; padding:11px; border:1px solid var(--line); background:var(--paper); transition:.18s ease; }
+    .palette-option label:hover { border-color:var(--espresso); }
+    .palette-option input:focus-visible + label { outline:2px solid var(--espresso); outline-offset:2px; }
+    .palette-option input:checked + label { border-color:var(--espresso); background:var(--misty-greige); box-shadow:inset 0 0 0 1px var(--espresso); }
+    .palette-name { font-family:var(--serif); font-size:14px; line-height:1.05; }
+    .palette-swatches { display:flex; gap:3px; }
+    .palette-swatches i { width:18px; height:10px; display:block; border:1px solid rgba(36,33,30,.12); }
 
     .preferences { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
     .field { position:relative; }
@@ -307,6 +329,7 @@
       .preferences { grid-template-columns:1fr; }
       .shape-grid { grid-template-columns:repeat(2, 1fr); }
       .shape-option:last-child { grid-column:span 2; }
+      .palette-grid { grid-template-columns:repeat(2, 1fr); }
       .formula { padding:66px 0; }
       .about { padding:68px 0; }
       .portrait-frame { width:82%; }
@@ -372,10 +395,21 @@
               <label class="upload-btn" for="photoInput">Choose a photo</label>
             </div>
             <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp">
-            <img id="photoPreview" alt="Your uploaded full-body preview">
+            <canvas id="photoCanvas" aria-label="Your uploaded photo. Tap the requested body points to estimate your body shape."></canvas>
             <div class="photo-actions" id="photoActions">
               <label for="photoInput">Replace</label>
               <button type="button" id="removePhoto">Remove</button>
+            </div>
+          </div>
+          <div class="analysis-panel" id="analysisPanel">
+            <div class="analysis-row">
+              <p id="analysisStatus">Tap the left shoulder to begin the optional photo analysis.</p>
+              <button class="reset-analysis" id="resetAnalysis" type="button">Start over</button>
+            </div>
+            <div class="analysis-key" aria-hidden="true">
+              <span><i style="background:#6B5B4D"></i>Shoulders</span>
+              <span><i style="background:#C2B1A1"></i>Waist</span>
+              <span><i style="background:#A9A29A"></i>Hips</span>
             </div>
           </div>
 
@@ -385,25 +419,45 @@
             </legend>
             <div class="shape-grid">
               <div class="shape-option">
-                <input type="radio" name="bodyShape" id="shapeTriangle" value="Triangle">
+                <input type="radio" name="bodyShape" id="shapeTriangle" value="Triangle" data-shape-key="triangle">
                 <label for="shapeTriangle"><span class="shape-mark triangle" aria-hidden="true"></span><span class="shape-name">Triangle</span></label>
               </div>
               <div class="shape-option">
-                <input type="radio" name="bodyShape" id="shapeInverted" value="Inverted triangle">
+                <input type="radio" name="bodyShape" id="shapeInverted" value="Inverted triangle" data-shape-key="triangle-inv">
                 <label for="shapeInverted"><span class="shape-mark inverted" aria-hidden="true"></span><span class="shape-name">Inverted<br>triangle</span></label>
               </div>
               <div class="shape-option">
-                <input type="radio" name="bodyShape" id="shapeRectangle" value="Rectangle">
+                <input type="radio" name="bodyShape" id="shapeRectangle" value="Rectangle" data-shape-key="rectangle">
                 <label for="shapeRectangle"><span class="shape-mark" aria-hidden="true"></span><span class="shape-name">Rectangle</span></label>
               </div>
               <div class="shape-option">
-                <input type="radio" name="bodyShape" id="shapeHourglass" value="Hourglass">
+                <input type="radio" name="bodyShape" id="shapeHourglass" value="Hourglass" data-shape-key="hourglass">
                 <label for="shapeHourglass"><span class="shape-mark hourglass" aria-hidden="true"></span><span class="shape-name">Hourglass</span></label>
               </div>
               <div class="shape-option">
-                <input type="radio" name="bodyShape" id="shapeOval" value="Oval">
+                <input type="radio" name="bodyShape" id="shapeOval" value="Oval" data-shape-key="oval">
                 <label for="shapeOval"><span class="shape-mark oval" aria-hidden="true"></span><span class="shape-name">Oval</span></label>
               </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="palette-picker" id="palettePicker">
+            <legend>
+              <span class="shape-heading"><strong>Select your personal color palette</strong><span>Required</span></span>
+            </legend>
+            <div class="palette-grid">
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteLightSpring" value="Light Spring"><label for="paletteLightSpring"><span class="palette-name">Light Spring</span><span class="palette-swatches"><i style="background:#F7D9B6"></i><i style="background:#FBC4A5"></i><i style="background:#B9E3D0"></i><i style="background:#A8D8DE"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteWarmSpring" value="Warm Spring"><label for="paletteWarmSpring"><span class="palette-name">Warm Spring</span><span class="palette-swatches"><i style="background:#F0895B"></i><i style="background:#3FB0A4"></i><i style="background:#F5C242"></i><i style="background:#7CB342"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteBrightSpring" value="Bright Spring"><label for="paletteBrightSpring"><span class="palette-name">Bright Spring</span><span class="palette-swatches"><i style="background:#FF6B4A"></i><i style="background:#00B2A9"></i><i style="background:#FFD400"></i><i style="background:#FF3B6B"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteLightSummer" value="Light Summer"><label for="paletteLightSummer"><span class="palette-name">Light Summer</span><span class="palette-swatches"><i style="background:#B7C9E2"></i><i style="background:#D8C7DD"></i><i style="background:#F0C6CE"></i><i style="background:#B8DDD3"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteCoolSummer" value="Cool Summer"><label for="paletteCoolSummer"><span class="palette-name">Cool Summer</span><span class="palette-swatches"><i style="background:#4E7DA3"></i><i style="background:#B15C7E"></i><i style="background:#8E8DBE"></i><i style="background:#5C8E8C"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteSoftSummer" value="Soft Summer"><label for="paletteSoftSummer"><span class="palette-name">Soft Summer</span><span class="palette-swatches"><i style="background:#A98F8A"></i><i style="background:#8A9A8C"></i><i style="background:#B49BAE"></i><i style="background:#8C9AA6"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteSoftAutumn" value="Soft Autumn"><label for="paletteSoftAutumn"><span class="palette-name">Soft Autumn</span><span class="palette-swatches"><i style="background:#C39567"></i><i style="background:#9CA378"></i><i style="background:#C4826A"></i><i style="background:#B29A6C"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteWarmAutumn" value="Warm Autumn"><label for="paletteWarmAutumn"><span class="palette-name">Warm Autumn</span><span class="palette-swatches"><i style="background:#B5541F"></i><i style="background:#8C9A3B"></i><i style="background:#D89B2C"></i><i style="background:#2E7A6C"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteDeepAutumn" value="Deep Autumn"><label for="paletteDeepAutumn"><span class="palette-name">Deep Autumn</span><span class="palette-swatches"><i style="background:#6E3B1E"></i><i style="background:#2E4A2E"></i><i style="background:#7A2E2E"></i><i style="background:#8A5A1E"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteCoolWinter" value="Cool Winter"><label for="paletteCoolWinter"><span class="palette-name">Cool Winter</span><span class="palette-swatches"><i style="background:#C8102E"></i><i style="background:#1B3A6B"></i><i style="background:#5B2C6F"></i><i style="background:#00838F"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteDeepWinter" value="Deep Winter"><label for="paletteDeepWinter"><span class="palette-name">Deep Winter</span><span class="palette-swatches"><i style="background:#5A0E23"></i><i style="background:#0E2A4A"></i><i style="background:#1A0E2A"></i><i style="background:#0E2A1A"></i></span></label></div>
+              <div class="palette-option"><input type="radio" name="colorPalette" id="paletteBrightWinter" value="Bright Winter"><label for="paletteBrightWinter"><span class="palette-name">Bright Winter</span><span class="palette-swatches"><i style="background:#FF0033"></i><i style="background:#0057FF"></i><i style="background:#FF00A0"></i><i style="background:#00C2D1"></i></span></label></div>
             </div>
           </fieldset>
 
@@ -558,18 +612,94 @@
     const input = document.getElementById('photoInput');
     const zone = document.getElementById('uploadZone');
     const content = document.getElementById('uploadContent');
-    const preview = document.getElementById('photoPreview');
+    const canvas = document.getElementById('photoCanvas');
+    const context = canvas.getContext('2d');
     const actions = document.getElementById('photoActions');
     const removeButton = document.getElementById('removePhoto');
+    const analysisPanel = document.getElementById('analysisPanel');
+    const analysisStatus = document.getElementById('analysisStatus');
+    const resetAnalysisButton = document.getElementById('resetAnalysis');
     const generateButton = document.getElementById('generateButton');
     const result = document.getElementById('result');
     const resultSummary = document.getElementById('resultSummary');
     const shapeInputs = [...document.querySelectorAll('input[name="bodyShape"]')];
+    const paletteInputs = [...document.querySelectorAll('input[name="colorPalette"]')];
     let previewUrl = '';
+    let analysisImage = null;
+    let analysisPoints = [];
+    let hasPhoto = false;
     let selectedShape = '';
+    let selectedPalette = '';
+
+    const analysisSteps = [
+      'Tap the left shoulder.',
+      'Tap the right shoulder.',
+      'Tap the left side of the waist.',
+      'Tap the right side of the waist.',
+      'Tap the left hip.',
+      'Tap the right hip.'
+    ];
+    const pointColors = ['#6B5B4D', '#C2B1A1', '#A9A29A'];
 
     function updateGenerateState() {
-      generateButton.disabled = !(previewUrl && selectedShape);
+      generateButton.disabled = !(hasPhoto && selectedShape && selectedPalette);
+    }
+
+    function classifyFigure(shoulders, waist, hips) {
+      const shoulderHipDifference = (shoulders - hips) / hips;
+      if (shoulderHipDifference > 0.05) return 'triangle-inv';
+      if (shoulderHipDifference < -0.05) return 'triangle';
+      const average = (shoulders + hips) / 2;
+      const waistDrop = (average - waist) / average;
+      if (waistDrop >= 0.25) return 'hourglass';
+      if (waist >= average * 0.98) return 'oval';
+      return 'rectangle';
+    }
+
+    function drawPoint(point, color) {
+      context.beginPath();
+      context.arc(point.x, point.y, Math.max(5, canvas.width * 0.009), 0, Math.PI * 2);
+      context.fillStyle = color;
+      context.fill();
+      context.strokeStyle = '#F7F3EC';
+      context.lineWidth = 2;
+      context.stroke();
+    }
+
+    function redrawAnalysis() {
+      if (!analysisImage) return;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(analysisImage, 0, 0, canvas.width, canvas.height);
+      for (let pair = 0; pair < 3; pair += 1) {
+        const first = analysisPoints[pair * 2];
+        const second = analysisPoints[pair * 2 + 1];
+        if (first) drawPoint(first, pointColors[pair]);
+        if (second) drawPoint(second, pointColors[pair]);
+        if (first && second) {
+          context.beginPath();
+          context.moveTo(first.x, first.y);
+          context.lineTo(second.x, second.y);
+          context.strokeStyle = pointColors[pair];
+          context.lineWidth = Math.max(2, canvas.width * 0.004);
+          context.stroke();
+        }
+      }
+    }
+
+    function resetAnalysis() {
+      analysisPoints = [];
+      redrawAnalysis();
+      analysisStatus.className = '';
+      analysisStatus.textContent = analysisSteps[0];
+      resetAnalysisButton.style.display = 'none';
+    }
+
+    function selectDetectedShape(key) {
+      const detectedInput = document.querySelector(`input[name="bodyShape"][data-shape-key="${key}"]`);
+      if (!detectedInput) return;
+      detectedInput.checked = true;
+      detectedInput.dispatchEvent(new Event('change', { bubbles:true }));
+      detectedInput.closest('.shape-option').scrollIntoView({ behavior:'smooth', block:'center' });
     }
 
     function showPhoto(file) {
@@ -580,12 +710,27 @@
       }
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       previewUrl = URL.createObjectURL(file);
-      preview.src = previewUrl;
-      preview.style.display = 'block';
-      content.style.display = 'none';
-      actions.style.display = 'flex';
-      zone.classList.add('has-image');
-      updateGenerateState();
+      const image = new Image();
+      image.onload = () => {
+        const scale = Math.min(1, 900 / image.width);
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        analysisImage = image;
+        hasPhoto = true;
+        canvas.style.display = 'block';
+        content.style.display = 'none';
+        actions.style.display = 'flex';
+        analysisPanel.style.display = 'block';
+        zone.classList.add('has-image');
+        resetAnalysis();
+        updateGenerateState();
+      };
+      image.onerror = () => {
+        hasPhoto = false;
+        alert('This photo could not be loaded. Please try a JPG, PNG or WebP file.');
+        updateGenerateState();
+      };
+      image.src = previewUrl;
     }
 
     input.addEventListener('change', () => showPhoto(input.files[0]));
@@ -599,14 +744,44 @@
     }));
     zone.addEventListener('drop', event => showPhoto(event.dataTransfer.files[0]));
 
+    canvas.addEventListener('click', event => {
+      if (!analysisImage || analysisPoints.length >= 6) return;
+      const rect = canvas.getBoundingClientRect();
+      analysisPoints.push({
+        x:(event.clientX - rect.left) * (canvas.width / rect.width),
+        y:(event.clientY - rect.top) * (canvas.height / rect.height)
+      });
+      redrawAnalysis();
+      if (analysisPoints.length < 6) {
+        analysisStatus.textContent = analysisSteps[analysisPoints.length];
+        return;
+      }
+
+      const shoulders = Math.hypot(analysisPoints[1].x - analysisPoints[0].x, analysisPoints[1].y - analysisPoints[0].y);
+      const waist = Math.hypot(analysisPoints[3].x - analysisPoints[2].x, analysisPoints[3].y - analysisPoints[2].y);
+      const hips = Math.hypot(analysisPoints[5].x - analysisPoints[4].x, analysisPoints[5].y - analysisPoints[4].y);
+      const detectedKey = classifyFigure(shoulders, waist, hips);
+      const detectedInput = document.querySelector(`input[data-shape-key="${detectedKey}"]`);
+      analysisStatus.className = 'detected';
+      analysisStatus.textContent = `Closest match: ${detectedInput.value}. You can keep this result or choose another shape.`;
+      resetAnalysisButton.style.display = 'block';
+      selectDetectedShape(detectedKey);
+    });
+
+    resetAnalysisButton.addEventListener('click', resetAnalysis);
+
     removeButton.addEventListener('click', () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       previewUrl = '';
+      analysisImage = null;
+      analysisPoints = [];
+      hasPhoto = false;
       input.value = '';
-      preview.removeAttribute('src');
-      preview.style.display = 'none';
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.style.display = 'none';
       content.style.display = 'block';
       actions.style.display = 'none';
+      analysisPanel.style.display = 'none';
       zone.classList.remove('has-image');
       updateGenerateState();
       result.classList.remove('show');
@@ -617,10 +792,15 @@
       updateGenerateState();
     }));
 
+    paletteInputs.forEach(input => input.addEventListener('change', () => {
+      selectedPalette = input.value;
+      updateGenerateState();
+    }));
+
     generateButton.addEventListener('click', () => {
       const occasion = document.getElementById('occasion').value;
       const season = document.getElementById('season').value;
-      resultSummary.textContent = `Your ${selectedShape.toLowerCase()} profile, ${occasion.toLowerCase()} goal and ${season.toLowerCase()} season are ready. Secure AI outfit generation with Jacquie’s recommendations will be connected in the next phase.`;
+      resultSummary.textContent = `Your ${selectedShape.toLowerCase()} profile, ${selectedPalette} color palette, ${occasion.toLowerCase()} goal and ${season.toLowerCase()} season are ready. Secure AI outfit generation with Jacquie’s recommendations will be connected in the next phase.`;
       result.classList.add('show');
       result.scrollIntoView({ behavior:'smooth', block:'center' });
     });

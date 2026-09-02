@@ -5,8 +5,12 @@ const required = [
   '<!doctype html>',
   '<html lang="en">',
   'id="photoInput"',
+  'id="photoCanvas"',
+  'id="analysisStatus"',
   'id="shapePicker"',
   'name="bodyShape"',
+  'id="palettePicker"',
+  'name="colorPalette"',
   'id="occasion"',
   'id="season"',
   'id="generateButton"',
@@ -31,6 +35,12 @@ if (uniqueTikTokLinks.size !== 4 || embeddedTikToks.length !== 4) {
 const bodyShapes = html.match(/<input type="radio" name="bodyShape"/g) || [];
 if (bodyShapes.length !== 5) {
   console.error(`Expected 5 body shape options, found ${bodyShapes.length}.`);
+  process.exit(1);
+}
+
+const colorPalettes = html.match(/<input type="radio" name="colorPalette"/g) || [];
+if (colorPalettes.length !== 12) {
+  console.error(`Expected 12 personal color palettes, found ${colorPalettes.length}.`);
   process.exit(1);
 }
 
