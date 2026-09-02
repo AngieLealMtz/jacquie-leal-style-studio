@@ -210,6 +210,19 @@
     .look h3 { margin:0 0 5px; font-family:var(--serif); font-size:25px; font-weight:500; }
     .look p { margin:0; font-size:8px; letter-spacing:.11em; line-height:1.6; text-transform:uppercase; }
 
+    .about { padding:94px 0; color:var(--soft-cream); background:var(--espresso); }
+    .about-grid { display:grid; grid-template-columns:minmax(270px, .76fr) minmax(0, 1.24fr); gap:84px; align-items:center; }
+    .portrait-frame { position:relative; width:min(100%, 390px); margin:auto; padding:16px; border:1px solid rgba(233,228,216,.42); border-radius:50% 50% 3px 3px; }
+    .portrait-frame::before { content:"Meet your stylist"; position:absolute; top:11%; right:-68px; z-index:2; padding:8px 13px; color:var(--ink); background:var(--soft-cream); font-family:var(--serif); font-size:18px; font-style:italic; transform:rotate(-4deg); }
+    .portrait-frame img { width:100%; display:block; border-radius:50% 50% 2px 2px; }
+    .about .eyebrow { color:var(--misty-greige); }
+    .about h2 { margin:12px 0 22px; font-family:var(--serif); font-size:clamp(49px, 6vw, 76px); font-weight:400; line-height:.88; letter-spacing:-.03em; }
+    .about h2 em { color:var(--warm-taupe); font-weight:400; }
+    .about-copy > p:not(.eyebrow) { max-width:590px; margin:0; color:#E4DCD1; font-family:var(--serif); font-size:22px; line-height:1.5; }
+    .signature { display:flex; align-items:center; gap:16px; margin-top:28px; }
+    .signature::before { content:""; width:58px; height:1px; background:var(--warm-taupe); }
+    .signature span { font-size:8px; letter-spacing:.2em; text-transform:uppercase; }
+
     .style-notes { padding:86px 0; background:var(--paper); }
     .notes-head { display:flex; align-items:end; justify-content:space-between; gap:30px; margin-bottom:38px; }
     .notes-head h2 { margin:9px 0 0; font-family:var(--serif); font-size:clamp(42px, 5vw, 66px); font-weight:400; line-height:.9; }
@@ -246,6 +259,8 @@
       .hero-copy { max-width:650px; }
       .studio { max-width:650px; box-shadow:16px 18px 0 rgba(194,177,161,.24); }
       .formula-grid { grid-template-columns:1fr; }
+      .about-grid { grid-template-columns:1fr; gap:58px; }
+      .portrait-frame { width:min(78%, 390px); }
       .tiktok-grid { grid-template-columns:1fr 1fr; }
       .look { min-height:300px; }
     }
@@ -267,6 +282,9 @@
       .upload { min-height:245px; }
       .preferences { grid-template-columns:1fr; }
       .formula { padding:66px 0; }
+      .about { padding:68px 0; }
+      .portrait-frame { width:82%; }
+      .portrait-frame::before { right:-35px; }
       .section-title { gap:12px; }
       .section-title h2 { font-size:42px; }
       .notes-head { align-items:start; flex-direction:column; }
@@ -290,6 +308,7 @@
       <div class="nav-links">
         <a href="#studio">AI Studio</a>
         <a href="#method">The Method</a>
+        <a href="#about">About</a>
         <a href="#style-notes">Style Notes</a>
         <a class="nav-cta" href="#studio">Create My Looks</a>
       </div>
@@ -396,6 +415,20 @@
             </div>
             <div><h3>Simple impact</h3><p>Fewer pieces, richer texture and a silhouette that feels like you.</p></div>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" id="about">
+      <div class="about-grid shell">
+        <div class="portrait-frame">
+          <img src="assets/jacquie-leal.jpg" alt="Jacquie Leal, personal stylist and content creator">
+        </div>
+        <div class="about-copy">
+          <p class="eyebrow">Hi, I’m Jacquie</p>
+          <h2>Style that feels<br><em>like you.</em></h2>
+          <p>I’m a style content creator and personal stylist. My approach is about building a wardrobe you love, repeating what works and feeling confident in every single day — with thoughtful technology making the process even more personal.</p>
+          <div class="signature"><span>Styling · Content · Real Life</span></div>
         </div>
       </div>
     </section>

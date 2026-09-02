@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const required = [
@@ -8,7 +8,8 @@ const required = [
   'id="occasion"',
   'id="season"',
   'id="generateButton"',
-  'id="style-notes"'
+  'id="style-notes"',
+  'assets/jacquie-leal.jpg'
 ];
 
 const missing = required.filter((token) => !html.includes(token));
@@ -22,5 +23,7 @@ if (tiktokLinks.length !== 4) {
   console.error(`Expected 4 TikTok links, found ${tiktokLinks.length}.`);
   process.exit(1);
 }
+
+await access(new URL('../assets/jacquie-leal.jpg', import.meta.url));
 
 console.log('Validation complete: the English AI outfit preview is ready to deploy.');
