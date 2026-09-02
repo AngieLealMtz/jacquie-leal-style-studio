@@ -19,8 +19,10 @@ if (missing.length) {
 }
 
 const tiktokLinks = html.match(/https:\/\/www\.tiktok\.com\/t\/[A-Za-z0-9]+\//g) || [];
-if (tiktokLinks.length !== 4) {
-  console.error(`Expected 4 TikTok links, found ${tiktokLinks.length}.`);
+const uniqueTikTokLinks = new Set(tiktokLinks);
+const embeddedTikToks = html.match(/data-video-id="\d+"/g) || [];
+if (uniqueTikTokLinks.size !== 4 || embeddedTikToks.length !== 4) {
+  console.error(`Expected 4 unique TikTok links and 4 embedded videos; found ${uniqueTikTokLinks.size} links and ${embeddedTikToks.length} embeds.`);
   process.exit(1);
 }
 
